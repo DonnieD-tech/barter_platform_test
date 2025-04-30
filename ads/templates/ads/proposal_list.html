@@ -1,0 +1,23 @@
+{% extends 'ads/base.html' %}
+
+{% block title %}Мои предложения обмена{% endblock %}
+
+{% block content %}
+<h2>Мои предложения обмена</h2>
+
+<div class="proposal-list">
+    {% for proposal in proposals %}
+        <div class="proposal-card">
+            <p><strong>Предложение от:</strong> {{ proposal.ad_sender.title }}<br>
+               <strong>Предложение к:</strong> {{ proposal.ad_receiver.title }}</p>
+            <p><strong>Статус:</strong> {{ proposal.get_status_display }}</p>
+            <p><strong>Комментарий:</strong> {{ proposal.comment }}</p>
+            {% if proposal.status == 'pending' %}
+                <p>Ожидает решения</p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>Нет предложений.</p>
+    {% endfor %}
+</div>
+{% endblock %}

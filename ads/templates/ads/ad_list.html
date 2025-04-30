@@ -1,0 +1,49 @@
+{% extends 'ads/../base.html' %}
+
+{% block title %}Список объявлений{% endblock %}
+
+{% block content %}
+<h2>Объявления</h2>
+
+<form method="get">
+    <input type="text" name="q" placeholder="Поиск..." value="{{ request.GET.q }}">
+    <input type="text" name="category" placeholder="Категория" value="{{ request.GET.category }}">
+    <select name="condition">
+        <option value="">Состояние</option>
+        <option value="new">Новый</option>
+        <option value="used">Б/у</option>
+    </select>
+    <button type="submit">Найти</button>
+</form>
+
+<div class="ad-grid">
+    {% for ad in ads %}
+        <div class="ad-card">
+            <h3>{{ ad.title }}</h3>
+            <p><strong>Категория:</strong> {{ ad.category }}</p>
+            <p><strong>Состояние:</strong> {{ ad.get_condition_display }}</p>
+            <p>{{ ad.description|truncatewords:15 }}</p>
+            {% if ad.image_url %}
+                <img src="{{ ad.image_url }}" alt="Изображение">
+            {% endif %}
+            {% if ad.user == request.user %}
+                <a href="{% url 'ad_edit' ad.pk %}">✏️ Редактировать</a>
+                <a href="{% url 'ad_delete' ad.pk %}">🗑 Удалить</a>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>Объявления не найдены.</p>
+    {% endfor %}
+</div>
+
+<div class="pagination">
+    {% if ads.has_previous %}
+        <a href="?page={{ ads.previous_page_number }}">Назад</a>
+    {% endif %}
+    <span>Страница {{ ads.number }} из {{ ads.paginator.num_pages }}</span>
+    {% if ads.has_next %}
+        <a href="?page={{ ads.next_page_number }}">Вперед</a>
+    {% endif %}
+</div>
+{% endblock %}
+
