@@ -1,20 +1,32 @@
-{% extends 'ads/../base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Список объявлений{% endblock %}
 
 {% block content %}
-<h2>Объявления</h2>
+<h2 class="page-title">Объявления</h2>
 
-<form method="get">
-    <input type="text" name="q" placeholder="Поиск..." value="{{ request.GET.q }}">
-    <input type="text" name="category" placeholder="Категория" value="{{ request.GET.category }}">
-    <select name="condition">
-        <option value="">Состояние</option>
-        <option value="new">Новый</option>
-        <option value="used">Б/у</option>
-    </select>
-    <button type="submit">Найти</button>
-</form>
+<div class="filter-form-wrapper">
+    <form method="get" class="filter-form">
+        <input type="text" name="q" placeholder="Поиск..." value="{{ request.GET.q }}">
+
+        <select name="category">
+            <option value="">Категория</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select name="condition">
+            <option value="">Состояние</option>
+            <option value="new" {% if request.GET.condition == "new" %}selected{% endif %}>Новый</option>
+            <option value="used" {% if request.GET.condition == "used" %}selected{% endif %}>Б/у</option>
+        </select>
+
+        <button type="submit">Найти</button>
+    </form>
+</div>
 
 <div class="ad-grid">
     {% for ad in ads %}
@@ -36,14 +48,27 @@
     {% endfor %}
 </div>
 
+
 <div class="pagination">
     {% if ads.has_previous %}
-        <a href="?page={{ ads.previous_page_number }}">Назад</a>
+        <a href="?page=1">⏮</a>
+        <a href="?page={{ ads.previous_page_number }}">⟵</a>
     {% endif %}
-    <span>Страница {{ ads.number }} из {{ ads.paginator.num_pages }}</span>
+
+    {% for num in ads.paginator.page_range %}
+        {% if num == ads.number %}
+            <span class="current">{{ num }}</span>
+        {% else %}
+            <a href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
     {% if ads.has_next %}
-        <a href="?page={{ ads.next_page_number }}">Вперед</a>
+        <a href="?page={{ ads.next_page_number }}">⟶</a>
+        <a href="?page={{ ads.paginator.num_pages }}">⏭</a>
     {% endif %}
 </div>
+
+
 {% endblock %}
 

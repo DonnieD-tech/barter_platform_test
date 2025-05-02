@@ -8,7 +8,6 @@ venv/
 .Python
 
 # Django
-db.sqlite3
 /media
 /staticfiles
 

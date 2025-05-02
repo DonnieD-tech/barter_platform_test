@@ -1,23 +1,80 @@
-{% extends 'ads/base.html' %}
-
-{% block title %}Мои предложения обмена{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-<h2>Мои предложения обмена</h2>
+<h2>Ваши предложения обмена</h2>
 
-<div class="proposal-list">
-    {% for proposal in proposals %}
-        <div class="proposal-card">
-            <p><strong>Предложение от:</strong> {{ proposal.ad_sender.title }}<br>
-               <strong>Предложение к:</strong> {{ proposal.ad_receiver.title }}</p>
-            <p><strong>Статус:</strong> {{ proposal.get_status_display }}</p>
-            <p><strong>Комментарий:</strong> {{ proposal.comment }}</p>
-            {% if proposal.status == 'pending' %}
-                <p>Ожидает решения</p>
+<form method="get" style="margin-bottom: 20px;">
+    <select name="role">
+        <option value="">Отправитель или получатель</option>
+        <option value="sender" {% if request.GET.role == 'sender' %}selected{% endif %}>Я отправитель</option>
+        <option value="receiver" {% if request.GET.role == 'receiver' %}selected{% endif %}>Я получатель</option>
+    </select>
+
+    <select name="status">
+        <option value="">Статус обмена</option>
+        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Ожидает ответа</option>
+        <option value="accepted" {% if request.GET.status == 'accepted' %}selected{% endif %}>Принят</option>
+        <option value="declined" {% if request.GET.status == 'declined' %}selected{% endif %}>Отклонен</option>
+    </select>
+
+    <button type="submit">Фильтровать</button>
+</form>
+
+
+<div class="proposals-grid">
+    {% for p in proposals %}
+    <div class="proposal-item">
+        <!-- Карточка отправителя -->
+        <div class="ad-card small">
+            <h3>{{ p.ad_sender.title }}</h3>
+            {% if p.ad_sender.image_url %}
+                <img src="{{ p.ad_sender.image_url }}" alt="Товар отправителя">
+            {% endif %}
+            <p>{{ p.ad_sender.category }}</p>
+            <p>{{ p.ad_sender.get_condition_display }}</p>
+        </div>
+
+        <!-- Стрелка -->
+        <div class="arrow">
+            ➡️
+        </div>
+
+        <!-- Карточка получателя -->
+        <div class="ad-card small">
+            <h3>{{ p.ad_receiver.title }}</h3>
+            {% if p.ad_receiver.image_url %}
+                <img src="{{ p.ad_receiver.image_url }}" alt="Товар получателя">
+            {% endif %}
+            <p>{{ p.ad_receiver.category }}</p>
+            <p>{{ p.ad_receiver.get_condition_display }}</p>
+        </div>
+
+        <!-- Статус и действия -->
+        <div class="proposal-actions">
+            <p><strong>{{ p.get_status_display }}</strong> от {{ p.ad_sender.user.username }}</p>
+
+            {% if p.status == 'pending' and p.ad_receiver.user == request.user %}
+                <form method="post" action="{% url 'accept_exchange' p.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">✅ Согласен</button>
+                </form>
+
+                <form method="post" action="{% url 'decline_exchange' p.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">❌ Отказать</button>
+                </form>
+            {% endif %}
+
+            {% if p.comment %}
+                <p><strong>Комментарий:</strong> {{ p.comment }}</p>
             {% endif %}
         </div>
+    </div>
+
     {% empty %}
         <p>Нет предложений.</p>
     {% endfor %}
 </div>
 {% endblock %}
+
+
